@@ -1,0 +1,124 @@
+---
+title: "PSD Tugas 2 Visualisasi"
+author: "Valensio"
+date: "2025-03-27"
+output: html_document
+---
+library(ggplot2) 
+library(dplyr) 
+library(readr)
+library(tidyverse)
+
+```{r, echo=TRUE}
+library(ggplot2) 
+library(dplyr) 
+library(readr)
+library(tidyverse)
+recent_grads <- read_csv("recent-grads.csv")
+```
+
+
+#Exercise 1
+*Ada tiga jenis pendapatan yang dilaporkan dalam data frame ini: p25th, median, dan p75th. Ketiganya masing-masing merujuk pada persentil ke-25, ke-50, dan ke-75 dari distribusi pendapatan individu yang diambil sampelnya untuk suatu jurusan tertentu. Mengapa kita sering memilih median daripada mean untuk menggambarkan pendapatan tipikal suatu kelompok?*
+*Jawab : Median lebih sering digunakan dibandingkan mean dalam menggambarkan pendapatan tipikal suatu kelompok karena median tidak terpengaruh oleh outlier atau nilai ekstrem. Dalam distribusi pendapatan, sering kali terdapat individu dengan pendapatan yang sangat tinggi, yang dapat menyebabkan mean menjadi lebih besar dari mayoritas kelompok dan tidak mencerminkan pendapatan umum lulusan. Sementara itu, median adalah nilai tengah dari data, sehingga lebih representatif dalam menunjukkan pendapatan tipikal suatu jurusan. Dengan kata lain, median memberikan gambaran yang lebih adil dan akurat dibandingkan dengan mean dalam konteks distribusi pendapatan yang sering kali bersifat tidak simetris atau condong ke kanan (right-skewed) akibat adanya beberapa individu dengan gaji yang jauh lebih tinggi dari rata-rata.*
+
+
+#Exercise 2
+*Buat ulang visualisasi berikut. Catatan: Lebar bin yang digunakan adalah $5.000. Perhatikan dengan cermat teks dan label pada sumbu.*
+*Jawab : Visualisasi ini menunjukkan distribusi pendapatan median berdasarkan kategori jurusan STEM. Dengan binwidth sebesar $5.000, histogram memberikan gambaran umum tentang sebaran pendapatan lulusan di masing-masing bidang STEM. Penggunaan facet_wrap memungkinkan kita untuk melihat perbedaan distribusi di setiap kategori jurusan dengan lebih jelas.*
+
+```{r, echo=TRUE}
+library(ggplot2) 
+library(dplyr) 
+library(readr)
+library(tidyverse)
+
+ggplot(recent_grads %>% filter(Major_category %in% c("Biology & Life Science",
+                                                     "Computers & Mathematics",
+                                                     "Engineering",
+                                                     "Physical Sciences")), 
+       aes(x = Median, fill = Major_category)) +
+  geom_histogram(binwidth = 5000, color = "black", alpha = 0.7) +
+  facet_wrap(~Major_category, scales = "free_y") +
+  labs(title = "Median Earnings of Full-Time, Year-Round Workers",
+       subtitle = "For STEM Majors",
+       x = "Median earnings",
+       y = "Frequency") +
+  theme_minimal()
+```
+
+#Excercise 3
+*Buat ulang visualisasi dari latihan sebelumnya, kali ini dengan lebar bin sebesar $1.000. Mana yang lebih baik antara $1.000 atau $5.000 sebagai pilihan lebar bin? Jelaskan alasan Anda dalam satu kalimat.*
+*Jawab : Dibandingkan dengan binwidth $5.000, penggunaan binwidth $1.000 memberikan lebih banyak detail mengenai variasi pendapatan, tetapi dapat terlihat terlalu granular dan membuat histogram lebih sulit dibaca, binwidth $5.000 lebih baik untuk mendapatkan gambaran umum, sedangkan binwidth $1.000 lebih cocok jika kita ingin melihat distribusi secara lebih mendetail.*
+
+
+```{r, echo=TRUE}
+library(ggplot2) 
+library(dplyr) 
+library(readr)
+library(tidyverse)
+ggplot(recent_grads %>% filter(Major_category %in% c("Biology & Life Science",
+                                                     "Computers & Mathematics",
+                                                     "Engineering",
+                                                     "Physical Sciences")), 
+       aes(x = Median, fill = Major_category)) +
+  geom_histogram(binwidth = 1000, color = "black", alpha = 0.7) +
+  facet_wrap(~Major_category, scales = "free_y") +
+  labs(title = "Median Earnings of Full-Time, Year-Round Workers",
+       subtitle = "For STEM Majors",
+       x = "Median earnings",
+       y = "Frequency") +
+  theme_minimal()
+
+```
+
+#Exercise 4
+*urusan STEM mana (yaitu, jurusan dalam kategori "Biology & Life Science", "Computers & Mathematics", "Engineering", dan "Physical Sciences") yang memiliki gaji median yang sama dengan atau lebih rendah dari median untuk seluruh jurusan (semua jurusan, bukan hanya yang termasuk dalam kategori STEM)? Output Anda hanya boleh menampilkan nama jurusan serta pendapatan median, persentil ke-25, dan persentil ke-75 untuk jurusan tersebut, dan harus diurutkan sehingga jurusan dengan pendapatan median tertinggi berada di bagian atas.*
+*Jawab : Dari hasil analisis, jurusan-jurusan STEM yang memiliki pendapatan median lebih rendah dari median keseluruhan jurusan STEM dapat diidentifikasi. Ini menunjukkan bahwa meskipun termasuk dalam bidang STEM, tidak semua jurusan memiliki pendapatan yang tinggi secara konsisten.*
+
+```{r, echo=TRUE}
+library(ggplot2) 
+library(dplyr) 
+library(readr)
+library(tidyverse)
+median_stem <- recent_grads %>%
+  filter(Major_category %in% c("Biology & Life Science",
+                               "Computers & Mathematics",
+                               "Engineering",
+                               "Physical Sciences")) %>%
+  summarise(median_salary = median(Median, na.rm = TRUE)) %>%
+  pull(median_salary)
+
+low_income_stem <- recent_grads %>%
+  filter(Major_category %in% c("Biology & Life Science",
+                               "Computers & Mathematics",
+                               "Engineering",
+                               "Physical Sciences"),
+         Median < median_stem) %>%
+  select(Major, Median)
+
+low_income_stem
+
+```
+
+
+#Exercise 5
+*Buatlah sebuah pertanyaan yang menarik bagi Anda yang dapat dijawab menggunakan setidaknya tiga variabel dari dataset, lalu jawab pertanyaan tersebut menggunakan statistik ringkasan dan/atau visualisasi.*
+*Jawab : Apakah ada hubungan antara persentase wanita dalam suatu jurusan, tingkat pengangguran, dan pendapatan median? Apakah jurusan dengan lebih banyak wanita cenderung memiliki tingkat pengangguran lebih tinggi dan gaji lebih rendah?*
+*Untuk menjawab pertanyaan ini, menggunakan scatter plot yang menunjukkan hubungan antara persentase wanita dalam jurusan (ShareWomen), pendapatan median (Median), dan tingkat pengangguran (Unemployment_rate).*
+*Jawab : Scatter plot menunjukkan hubungan lemah antara persentase wanita dalam jurusan dan tingkat pengangguran, dengan garis regresi yang hampir datar. Ini menunjukkan bahwa faktor lain, seperti permintaan pasar kerja, lebih berpengaruh dibandingkan gender.*
+
+
+```{r, echo=TRUE}
+library(ggplot2) 
+library(dplyr) 
+library(readr)
+library(tidyverse)
+ggplot(recent_grads, aes(x = ShareWomen, y = Unemployment_rate)) +
+  geom_point(alpha = 0.6, color = "blue") +
+  geom_smooth(method = "lm", se = FALSE, color = "red") +
+  labs(title = "Hubungan antara Persentase Wanita dalam Jurusan dan Tingkat Pengangguran",
+       x = "Persentase Wanita dalam Jurusan",
+       y = "Tingkat Pengangguran") +
+  theme_minimal()
+```
